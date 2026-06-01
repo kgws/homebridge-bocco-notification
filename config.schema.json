@@ -1,17 +1,60 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "BoccoNotification",
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,
+  "customUi": true,
   "schema": {
     "type": "object",
-    "required": ["name"],
+    "required": ["name", "api_key", "email", "password"],
     "additionalProperties": false,
     "properties": {
       "name": {
         "title": "Name",
         "type": "string",
-        "default": "Example Dynamic Platform"
+        "default": "Bocco Notification"
+      },
+      "api_key": {
+        "title": "API Key",
+        "type": "string",
+        "description": "Your BOCCO API key"
+      },
+      "email": {
+        "title": "Email",
+        "type": "string",
+        "format": "email",
+        "description": "Your BOCCO account email address"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "description": "Your BOCCO account password"
+      },
+      "messages": {
+        "title": "Notification Switches",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["name", "roomUuid", "text"],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "title": "Button Name",
+              "type": "string",
+              "description": "Display name shown in the Home app"
+            },
+            "roomUuid": {
+              "title": "Room UUID",
+              "type": "string",
+              "description": "UUID of the BOCCO room to send the message to"
+            },
+            "text": {
+              "title": "Message Text",
+              "type": "string",
+              "description": "Text message to send when the switch is triggered"
+            }
+          }
+        }
       }
     }
   }

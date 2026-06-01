@@ -3,12 +3,12 @@
   "displayName": "Homebridge Bocco Notification",
   "type": "module",
   "version": "0.0.1",
-  "private": true,
+
   "description": "Homebridge plugin to send push notifications through Bocco from HomeKit",
   "author": {
     "name": "kgws",
     "email": "dev.kgws@gmail.com",
-    "url": "https://kgws.hatenablog.com/" 
+    "url": "https://kgws.hatenablog.com/"
   },
   "license": "Apache-2.0",
   "homepage": "https://github.com/kgws/homebridge-bocco-notification#readme",
@@ -36,7 +36,7 @@
     "watch": "npm run build && npm link && nodemon"
   },
   "dependencies": {
-    "homebridge-lib": "^8.0.1"
+    "@homebridge/plugin-ui-utils": "^2.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
