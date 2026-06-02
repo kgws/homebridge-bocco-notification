@@ -1,9 +1,10 @@
 {
   "pluginAlias": "BoccoNotification",
+  "customUi": true,
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,
-  "customUi": true,
+
   "schema": {
     "type": "object",
     "required": ["name", "api_key", "email", "password"],
