@@ -6,6 +6,18 @@ export default tseslint.config(
     ignores: ['dist/**'],
   },
   {
+    // homebridge-ui/server.js は Node.js 22 で動作するため、
+    // Node.js 18 以降で利用可能なグローバル API を明示する
+    files: ['homebridge-ui/**/*.js'],
+    languageOptions: {
+      globals: {
+        fetch: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+      },
+    },
+  },
+  {
     rules: {
       'quotes': ['error', 'single'],
       'indent': ['error', 2, { 'SwitchCase': 0 }],
