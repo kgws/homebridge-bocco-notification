@@ -34,13 +34,12 @@ export class BoccoNotificationAccessory {
     const { roomUuid, text } = this.accessory.context.message;
 
     try {
-      await this.platform.boccoClient.sendTextMessage(roomUuid, text);
-      this.platform.log.info(`Sent BOCCO notification to room "${roomUuid}": "${text}"`);
+      await this.platform.boccoClient.sendMessage(roomUuid, text);
+      this.platform.log.info(`Sent message to room "${roomUuid}": "${text}"`);
     } catch (error) {
-      this.platform.log.error('Failed to send BOCCO notification:', error);
+      this.platform.log.error('Failed to send message:', error);
     }
 
-    // Momentary switch: auto-reset to off after sending
     setTimeout(() => {
       this.service.updateCharacteristic(this.platform.Characteristic.On, false);
     }, AUTO_OFF_DELAY_MS);

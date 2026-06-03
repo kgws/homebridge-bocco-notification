@@ -25,8 +25,8 @@ export class BoccoNotificationPlatform implements DynamicPlatformPlugin {
     );
 
     this.api.on('didFinishLaunching', () => {
-      this.logAvailableRooms();
-      this.setupNotificationSwitches();
+      this.logRoomList();
+      this.setupSwitches();
     });
   }
 
@@ -34,39 +34,39 @@ export class BoccoNotificationPlatform implements DynamicPlatformPlugin {
     this.accessories.set(accessory.UUID, accessory);
   }
 
-  private async logAvailableRooms() {
+  private async logRoomList() {
     try {
-      const rooms = await this.boccoClient.getJoinedRooms();
+      const rooms = await this.boccoClient.getRooms();
       this.log.info('Available BOCCO rooms:');
       for (const room of rooms) {
-        this.log.info(`  roomUuid: "${room.uuid}"  name: "${room.name}"`);
+        this.log.info(`  name: "${room.name}"  roomUuid: "${room.uuid}"`);
       }
     } catch (error) {
-      this.log.warn('Could not fetch BOCCO room list:', error);
+      this.log.warn('Could not fetch room list:', error);
     }
   }
 
-  private setupNotificationSwitches() {
+  private setupSwitches() {
     const messages: MessageConfig[] = (this.config.messages as MessageConfig[]) ?? [];
-    const registeredUUIDs: string[] = [];
+    const registeredUUIDs = new Set<string>();
 
     for (const message of messages) {
       if (!message.roomUuid) {
-        this.log.warn(`Skipping button "${message.name}": roomUuid is not set. Please configure it in the plugin settings.`);
+        this.log.warn(`Skipping "${message.name}": roomUuid is not set.`);
         continue;
       }
 
       const uuid = this.api.hap.uuid.generate(message.name);
-      registeredUUIDs.push(uuid);
+      registeredUUIDs.add(uuid);
 
-      const existingAccessory = this.accessories.get(uuid);
-      if (existingAccessory) {
-        this.log.info('Restoring notification switch from cache:', existingAccessory.displayName);
-        existingAccessory.context.message = message;
-        this.api.updatePlatformAccessories([existingAccessory]);
-        new BoccoNotificationAccessory(this, existingAccessory);
+      const existing = this.accessories.get(uuid);
+      if (existing) {
+        this.log.info('Restoring switch from cache:', existing.displayName);
+        existing.context.message = message;
+        this.api.updatePlatformAccessories([existing]);
+        new BoccoNotificationAccessory(this, existing);
       } else {
-        this.log.info('Registering new notification switch:', message.name);
+        this.log.info('Registering new switch:', message.name);
         const accessory = new this.api.platformAccessory(message.name, uuid);
         accessory.context.message = message;
         new BoccoNotificationAccessory(this, accessory);
@@ -74,10 +74,9 @@ export class BoccoNotificationPlatform implements DynamicPlatformPlugin {
       }
     }
 
-    // Remove switches that are no longer present in the config
     for (const [uuid, accessory] of this.accessories) {
-      if (!registeredUUIDs.includes(uuid)) {
-        this.log.info('Removing stale notification switch:', accessory.displayName);
+      if (!registeredUUIDs.has(uuid)) {
+        this.log.info('Removing stale switch:', accessory.displayName);
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
       }
     }
