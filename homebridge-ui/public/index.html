@@ -40,10 +40,6 @@
 
     <div id="messages"></div>
 
-    <div class="mt-4">
-      <button id="saveBtn" type="button" class="btn btn-primary">Save</button>
-    </div>
-
   </div>
 
   <script>
@@ -114,13 +110,29 @@
         </div>
       `;
 
-      row.querySelector('.room-field').appendChild(buildRoomSelect(msg.roomUuid || ''));
+      // select → invalid-feedback の順で挿入する（Bootstrap の仕様）
+      const roomField = row.querySelector('.room-field');
+      roomField.appendChild(buildRoomSelect(msg.roomUuid || ''));
+      const feedback = document.createElement('div');
+      feedback.className = 'invalid-feedback';
+      feedback.textContent = 'Room を選択してください。';
+      roomField.appendChild(feedback);
+
       row.querySelector('.remove-btn').addEventListener('click', () => row.remove());
       container.appendChild(row);
     }
 
-    // Sync in-memory config on every form change so the native Homebridge Save button
-    // always persists the latest values.
+    // Room が未選択のドロップダウンにエラー表示を付ける
+    function validateRooms() {
+      document.querySelectorAll('.msg-row').forEach(row => {
+        const select = row.querySelector('.msg-room');
+        const isEmpty = !select.value;
+        select.classList.toggle('is-invalid', isEmpty);
+      });
+    }
+
+    // フォームの変更内容をメモリ上の config に同期する
+    // ネイティブの Homebridge Save ボタンが常に最新の値を保存できるようにするため
     async function syncConfig() {
       if (pluginConfig.length === 0) return;
       pluginConfig[0].name     = document.getElementById('name').value.trim() || 'Bocco Notification';
@@ -128,6 +140,7 @@
       pluginConfig[0].email    = document.getElementById('email').value.trim();
       pluginConfig[0].password = document.getElementById('password').value;
       pluginConfig[0].messages = getMessages();
+      validateRooms();
       try {
         await homebridge.updatePluginConfig(pluginConfig);
       } catch (e) {
@@ -155,6 +168,7 @@
       try {
         rooms = await homebridge.request('/rooms', { api_key, email, password });
         refreshRoomDropdowns();
+        validateRooms();
         homebridge.toast.success(`Loaded ${rooms.length} room(s).`);
       } catch (e) {
         alert(e.error || 'Failed to load rooms.');
@@ -163,23 +177,9 @@
       }
     });
 
-    document.getElementById('addBtn').addEventListener('click', () => addMessageRow());
-
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-      const messages = getMessages();
-      const missingRoom = messages.find(m => !m.roomUuid);
-      if (missingRoom) {
-        alert(`Please select a room for "${missingRoom.name || 'button'}".`);
-        return;
-      }
-
-      await syncConfig();
-      try {
-        await homebridge.savePluginConfig();
-        homebridge.toast.success('Settings saved.');
-      } catch (e) {
-        console.warn('[BOCCO] savePluginConfig failed, use the Homebridge Save button:', e);
-      }
+    document.getElementById('addBtn').addEventListener('click', () => {
+      addMessageRow();
+      validateRooms();
     });
 
     // Initialize: load config, auto-fetch rooms, then render messages
@@ -214,6 +214,7 @@
       }
 
       (config.messages || []).forEach(msg => addMessageRow(msg));
+      validateRooms();
     })();
   </script>
 </body>
