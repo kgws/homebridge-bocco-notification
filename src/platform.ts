@@ -35,7 +35,6 @@ export class BoccoNotificationPlatform implements DynamicPlatformPlugin {
     // didFinishLaunching 後にスイッチを登録する
     // このイベントより前に registerPlatformAccessories を呼ぶと重複登録エラーになる
     this.api.on('didFinishLaunching', () => {
-      this.logRoomList();
       this.setupSwitches();
     });
   }
@@ -44,20 +43,6 @@ export class BoccoNotificationPlatform implements DynamicPlatformPlugin {
   // 復元したアクセサリを accessories マップに追加しておく
   configureAccessory(accessory: PlatformAccessory) {
     this.accessories.set(accessory.UUID, accessory);
-  }
-
-  // 起動時のログにルーム一覧を出力する
-  // ユーザーが roomUuid を確認しやすいように名前と UUID を並べて表示する
-  private async logRoomList() {
-    try {
-      const rooms = await this.boccoClient.getRooms();
-      this.log.info('Available BOCCO rooms:');
-      for (const room of rooms) {
-        this.log.info(`  name: "${room.name}"  roomUuid: "${room.uuid}"`);
-      }
-    } catch (error) {
-      this.log.warn('Could not fetch room list:', error);
-    }
   }
 
   // config.json の messages 配列をもとに通知スイッチを登録・更新・削除する
