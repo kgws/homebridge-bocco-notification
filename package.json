@@ -2,7 +2,7 @@
   "name": "homebridge-bocco-notification",
   "displayName": "Homebridge Bocco Notification",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Homebridge plugin to send push notifications through Bocco from HomeKit",
   "author": {
     "name": "kgws",
