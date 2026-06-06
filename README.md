@@ -1,202 +1,156 @@
 <p align="center">
-
-<img src="https://github.com/homebridge/branding/raw/latest/logos/homebridge-wordmark-logo-vertical.png" width="150">
-
+  <img src="https://github.com/homebridge/branding/raw/latest/logos/homebridge-wordmark-logo-vertical.png" width="150">
 </p>
 
 <span align="center">
 
-# Homebridge Platform Plugin Template
+# Homebridge BOCCO Notification
+
+[![npm version](https://img.shields.io/npm/v/homebridge-bocco-notification)](https://www.npmjs.com/package/homebridge-bocco-notification)
+[![npm downloads](https://img.shields.io/npm/dt/homebridge-bocco-notification)](https://www.npmjs.com/package/homebridge-bocco-notification)
 
 </span>
 
-This is a template Homebridge dynamic platform plugin and can be used as a base to help you get started developing your own plugin.
+The Homebridge [BOCCO](https://bocco.me/) plugin allows you to send push notifications through BOCCO from [HomeKit](https://www.apple.com/home-app/) with [Homebridge](https://homebridge.io/).
 
-This template should be used in conjunction with the [developer documentation](https://developers.homebridge.io/). A full list of all supported service types, and their characteristics is available on this site.
+Each notification is exposed as a switch accessory in HomeKit. Turning the switch on sends a text message to a specified BOCCO room, enabling you to trigger BOCCO notifications from HomeKit automations and Siri.
 
-### Clone As Template
+---
 
-Click the link below to create a new GitHub Repository using this template, or click the *Use This Template* button above.
+## Installation
 
-<span align="center">
+1. Search for **"BOCCO Notification"** on the plugin screen of [Homebridge Config UI X](https://github.com/homebridge/homebridge-config-ui-x)
+2. Find: `homebridge-bocco-notification`
+3. Click **Install**
 
-### [Create New Repository From Template](https://github.com/homebridge/homebridge-plugin-template/generate)
+---
 
-</span>
+## Prerequisites
 
-### Setup Development Environment
+You will need the following before configuring the plugin:
 
-To develop Homebridge plugins you must have Node.js 22 or later installed, and a modern code editor such as [VS Code](https://code.visualstudio.com/). This plugin template uses [TypeScript](https://www.typescriptlang.org/) to make development easier and comes with pre-configured settings for [VS Code](https://code.visualstudio.com/) and ESLint. If you are using VS Code install these extensions:
+- A [BOCCO](https://bocco.me/) account (email and password)
+- A BOCCO API key — obtain one from the [BOCCO API portal](https://api.bocco.me/)
+- The UUID of the BOCCO room you want to send messages to (available via the plugin's Custom UI)
 
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+---
 
-### Install Development Dependencies
+## Configuration
 
-Using a terminal, navigate to the project folder and run this command to install the development dependencies:
+Configure the plugin via the Homebridge Config UI X settings page.
+
+### Required Settings
+
+| Field | Description |
+|-------|-------------|
+| `api_key` | Your BOCCO API key |
+| `email` | Your BOCCO account email address |
+| `password` | Your BOCCO account password |
+
+### Notification Switches
+
+You can add multiple notification switches, each mapped to a BOCCO room and a message text.
+
+| Field | Description |
+|-------|-------------|
+| `name` | Display name shown in the Home app |
+| `roomUuid` | UUID of the BOCCO room to send the message to |
+| `text` | Text message to send when the switch is triggered |
+
+The Room UUID can be selected from a dropdown in the plugin's Custom UI — it is fetched automatically from the BOCCO API using your credentials.
+
+### Example `config.json`
+
+```json
+{
+  "platforms": [
+    {
+      "platform": "BoccoNotification",
+      "name": "Bocco Notification",
+      "api_key": "your-api-key",
+      "email": "your@email.com",
+      "password": "your-password",
+      "messages": [
+        {
+          "name": "Good Morning",
+          "roomUuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "text": "Good morning!"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## How It Works
+
+1. When a notification switch is turned **on** in HomeKit, the plugin sends the configured text message to the specified BOCCO room via the BOCCO API.
+2. The switch turns itself **off** automatically after the message is sent.
+3. Authentication tokens are cached and refreshed automatically — no manual re-authentication needed.
+
+---
+
+## Troubleshooting
+
+### Message not sent
+
+- Verify your `api_key`, `email`, and `password` are correct.
+- Check that the `roomUuid` matches a room you have joined in the BOCCO app.
+- Check the Homebridge logs for error messages.
+
+### Room UUID not appearing in the dropdown
+
+- Ensure your credentials are saved correctly in the plugin settings.
+- Try reloading the plugin settings page.
+
+---
+
+## Development
+
+### Install dependencies
 
 ```shell
 npm install
 ```
 
-### Update package.json
-
-Open the [`package.json`](./package.json) and change the following attributes:
-
-- `name` - this should be prefixed with `homebridge-` or `@username/homebridge-`, is case-sensitive, and contains no spaces nor special characters apart from a dash `-`
-- `displayName` - this is the "nice" name displayed in the Homebridge UI
-- `homepage` - link to your GitHub repo's `README.md`
-- `repository.url` - link to your GitHub repo
-- `bugs.url` - link to your GitHub repo issues page
-
-When you are ready to publish the plugin you should set `private` to false, or remove the attribute entirely.
-
-### Update Plugin Defaults
-
-Open the [`src/settings.ts`](./src/settings.ts) file and change the default values:
-
-- `PLATFORM_NAME` - Set this to be the name of your platform. This is the name of the platform that users will use to register the plugin in the Homebridge `config.json`.
-- `PLUGIN_NAME` - Set this to be the same name you set in the [`package.json`](./package.json) file.
-
-Open the [`config.schema.json`](./config.schema.json) file and change the following attribute:
-
-- `pluginAlias` - set this to match the `PLATFORM_NAME` you defined in the previous step.
-
-See the [Homebridge API docs](https://developers.homebridge.io/#/config-schema#default-values) for more details on the other attributes you can set in the `config.schema.json` file.
-
-### Build Plugin
-
-TypeScript needs to be compiled into JavaScript before it can run. The following command will compile the contents of your [`src`](./src) directory and put the resulting code into the `dist` folder.
+### Build
 
 ```shell
 npm run build
 ```
 
-### Link To Homebridge
-
-Run this command so your global installation of Homebridge can discover the plugin in your development environment:
-
-```shell
-npm link
-```
-
-You can now start Homebridge, use the `-D` flag, so you can see debug log messages in your plugin:
-
-```shell
-homebridge -D
-```
-
-### Watch For Changes and Build Automatically
-
-If you want to have your code compile automatically as you make changes, and restart Homebridge automatically between changes, you first need to add your plugin as a platform in `./test/hbConfig/config.json`:
-```
-{
-...
-    "platforms": [
-        {
-            "name": "Config",
-            "port": 8581,
-            "platform": "config"
-        },
-        {
-            "name": "<PLUGIN_NAME>",
-            //... any other options, as listed in config.schema.json ...
-            "platform": "<PLATFORM_NAME>"
-        }
-    ]
-}
-```
-
-and then you can run:
+### Watch for changes
 
 ```shell
 npm run watch
 ```
 
-This will launch an instance of Homebridge in debug mode which will restart every time you make a change to the source code. It will load the config stored in the default location under `~/.homebridge`. You may need to stop other running instances of Homebridge while using this command to prevent conflicts. You can adjust the Homebridge startup command in the [`nodemon.json`](./nodemon.json) file.
-
-### Customise Plugin
-
-You can now start customising the plugin template to suit your requirements.
-
-- [`src/platform.ts`](./src/platform.ts) - this is where your device setup and discovery should go.
-- [`src/platformAccessory.ts`](./src/platformAccessory.ts) - this is where your accessory control logic should go, you can rename or create multiple instances of this file for each accessory type you need to implement as part of your platform plugin. You can refer to the [developer documentation](https://developers.homebridge.io/) to see what characteristics you need to implement for each service type.
-- [`config.schema.json`](./config.schema.json) - update the config schema to match the config you expect from the user. See the [Plugin Config Schema Documentation](https://developers.homebridge.io/#/config-schema).
-
-### Versioning Your Plugin
-
-Given a version number `MAJOR`.`MINOR`.`PATCH`, such as `1.4.3`, increment the:
-
-1. **MAJOR** version when you make breaking changes to your plugin,
-2. **MINOR** version when you add functionality in a backwards compatible manner, and
-3. **PATCH** version when you make backwards compatible bug fixes.
-
-You can use the `npm version` command to help you with this:
+### Lint
 
 ```shell
-# major update / breaking changes
-npm version major
-
-# minor update / new features
-npm version update
-
-# patch / bugfixes
-npm version patch
+npm run lint
 ```
 
-### Publish Package
+---
 
-When you are ready to publish your plugin to [npm](https://www.npmjs.com/), make sure you have removed the `private` attribute from the [`package.json`](./package.json) file then run:
+## BOCCO API
 
-```shell
-npm publish
-```
+- [BOCCO API Documentation](https://api.bocco.me/)
 
-If you are publishing a scoped plugin, i.e. `@username/homebridge-xxx` you will need to add `--access=public` to command the first time you publish.
+---
 
-#### Publishing Beta Versions
+## Support / Donate
 
-You can publish *beta* versions of your plugin for other users to test before you release it to everyone.
+If this plugin is useful to you, please consider supporting its development!
 
-```shell
-# create a new pre-release version (eg. 2.1.0-beta.1)
-npm version prepatch --preid beta
+<p align="center">
+  <a href="https://ko-fi.com/kgws"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on Ko-fi"></a>
+</p>
 
-# publish to @beta
-npm publish --tag beta
-```
+---
 
-Users can then install the  *beta* version by appending `@beta` to the install command, for example:
+## License
 
-```shell
-sudo npm install -g homebridge-example-plugin@beta
-```
-
-### Best Practices
-
-Consider creating your plugin with the [Homebridge Verified](https://github.com/homebridge/verified) criteria in mind. This will help you to create a plugin that is easy to use and works well with Homebridge.
-You can then submit your plugin to the Homebridge Verified list for review.
-The most up-to-date criteria can be found [here](https://github.com/homebridge/verified#requirements).
-For reference, the current criteria are:
-
-- **General**
-  - The plugin must be of type [dynamic platform](https://developers.homebridge.io/#/#dynamic-platform-template).
-  - The plugin must not offer the same nor less functionality than that of any existing **verified** plugin.
-- **Repo**
-  - The plugin must be published to NPM and the source code available on a GitHub repository, with issues enabled.
-  - A GitHub release should be created for every new version of your plugin, with release notes.
-- **Environment**
-  - The plugin must run on all [supported LTS versions of Node.js](https://github.com/homebridge/homebridge/wiki/How-To-Update-Node.js), at the time of writing this is Node v22 and v24.
-  - The plugin must successfully install and not start unless it is configured.
-  - The plugin must not execute post-install scripts that modify the users' system in any way.
-  - The plugin must not require the user to run Homebridge in a TTY or with non-standard startup parameters, even for initial configuration.
-- **Codebase**
-  - The plugin must implement the [Homebridge Plugin Settings GUI](https://developers.homebridge.io/#/config-schema).
-  - The plugin must not contain any analytics or calls that enable you to track the user.
-  - If the plugin needs to write files to disk (cache, keys, etc.), it must store them inside the Homebridge storage directory.
-  - The plugin must not throw unhandled exceptions, the plugin must catch and log its own errors.
-
-### Useful Links
-
-Note these links are here for help but are not supported/verified by the Homebridge team
-
-- [Custom Characteristics](https://github.com/homebridge/homebridge-plugin-template/issues/20)
+Apache-2.0 © [kgws](https://kgws.hatenablog.com/)
